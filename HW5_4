@@ -1,0 +1,199 @@
+# Task #4
+from HW5_2 import MinHeap
+
+def dijkstra_heap(graph, start, finish):
+    """
+    Implementation of Dijkstra's algorithm using a heap for shortest path finding.
+    :param graph: dict of dicts, where graph[u][v] is the weight of edge (u, v)
+    :param start: starting node
+    :param finish: target node
+    :return: (shortest_distance, path)
+    """
+    distances = {node: float('inf') for node in graph}
+    previous_nodes = {node: None for node in graph}
+    distances[start] = 0
+    min_heap = MinHeap()
+    min_heap.insert((0, start))
+
+    while len(min_heap.heap) > 0:
+        current_distance, current_node = min_heap.extract_min()
+
+        if current_distance > distances[current_node]:
+            continue
+
+        for neighbor, weight in graph[current_node].items():
+            distance = current_distance + weight
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                previous_nodes[neighbor] = current_node
+                min_heap.insert((distance, neighbor))
+
+    path = []
+    current_node = finish
+    while current_node is not None:
+        path.insert(0, current_node)
+        current_node = previous_nodes[current_node]
+
+    if distances[finish] == float('inf'):
+        return float('inf'), []  # No path found
+
+    return distances[finish], path
+
+# Test case generator
+def generate_test_cases():
+    test_cases = []
+
+    # Test Case 1: Simple graph
+    test_cases.append((
+        {
+            'A': {'B': 1, 'C': 4},
+            'B': {'C': 2, 'D': 5},
+            'C': {'D': 1},
+            'D': {}
+        },
+        'A',
+        'D',
+        (4, ['A', 'B', 'C', 'D'])
+    ))
+
+    # Test Case 2: Disconnected graph
+    test_cases.append((
+        {
+            'A': {'B': 1},
+            'B': {},
+            'C': {'D': 1},
+            'D': {}
+        },
+        'A',
+        'D',
+        (float('inf'), [])
+    ))
+
+    # Test Case 3: Single node graph
+    test_cases.append((
+        {
+            'A': {}
+        },
+        'A',
+        'A',
+        (0, ['A'])
+    ))
+
+    # Test Case 4: No edges
+    test_cases.append((
+        {
+            'A': {},
+            'B': {},
+            'C': {}
+        },
+        'A',
+        'C',
+        (float('inf'), [])
+    ))
+
+    # Test Case 5: Multiple paths
+    test_cases.append((
+        {
+            'A': {'B': 1, 'C': 5},
+            'B': {'C': 2, 'D': 4},
+            'C': {'D': 1},
+            'D': {}
+        },
+        'A',
+        'D',
+        (4, ['A', 'B', 'C', 'D'])
+    ))
+
+    # Test Case 6: Larger graph
+    test_cases.append((
+        {
+            'A': {'B': 2, 'C': 5},
+            'B': {'C': 1, 'D': 4, 'E': 7},
+            'C': {'D': 1},
+            'D': {'E': 3},
+            'E': {'F': 2},
+            'F': {}
+        },
+        'A',
+        'F',
+        (9, ['A', 'B', 'C', 'D', 'E', 'F'])
+    ))
+
+    # Test Case 7: Cyclic graph
+    test_cases.append((
+        {
+            'A': {'B': 1},
+            'B': {'C': 2},
+            'C': {'A': 3, 'D': 1},
+            'D': {}
+        },
+        'A',
+        'D',
+        (4, ['A', 'B', 'C', 'D'])
+    ))
+
+    # Test Case 8: Dense graph
+    test_cases.append((
+        {
+            'A': {'B': 1, 'C': 2, 'D': 3},
+            'B': {'C': 1, 'D': 2, 'E': 4},
+            'C': {'D': 1, 'E': 3},
+            'D': {'E': 1},
+            'E': {}
+        },
+        'A',
+        'E',
+        (4, ['A', 'D', 'E'])
+    ))
+
+    # Test Case 9: Long chain graph
+    test_cases.append((
+        {
+            'A': {'B': 1},
+            'B': {'C': 1},
+            'C': {'D': 1},
+            'D': {'E': 1},
+            'E': {'F': 1},
+            'F': {}
+        },
+        'A',
+        'F',
+        (5, ['A', 'B', 'C', 'D', 'E', 'F'])
+    ))
+
+    return test_cases
+
+
+def path_is_valid(graph, path, start, finish, distance):
+    if not path:
+        return distance == float('inf')
+    if path[0] != start or path[-1] != finish:
+        return False
+    for i in range(len(path) - 1):
+        if path[i + 1] not in graph[path[i]]:
+            return False
+    # check distances
+    total_distance = 0
+    for i in range(len(path) - 1):
+        total_distance += graph[path[i]][path[i + 1]]
+    return total_distance == distance
+
+
+# Run tests
+def run_tests():
+    test_cases = generate_test_cases()
+
+    for i, (graph, start, finish, expected) in enumerate(test_cases):
+        distance, path = dijkstra_heap(graph, start, finish)
+        assert distance == expected[0], f"Test case {i + 1} failed: {distance} != {expected[0]}"
+        assert path_is_valid(graph, path, start, finish,
+                             distance), f"Test case {i + 1} failed: {path} is not a valid path"
+        # Note: there can be a couple of valid paths, so we only check if the path is valid
+        # you can comment if needed, but not path_is_valid() call
+        assert path == expected[1], f"Test case {i + 1} failed: {path} != {expected[1]}"
+
+    print("All test cases passed!")
+
+
+# Run the test suite
+run_tests()
