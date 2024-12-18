@@ -1,0 +1,111 @@
+import datetime
+
+
+# Recursive Approach
+def climb_stairs_recursive(n):
+    if (n == 0) or (n == 1):
+        return 1
+    return climb_stairs_recursive(n - 1) + climb_stairs_recursive(n - 2)
+# -- time complexity: O(2^n) in the worst case
+# -- space complexity: O(n)
+
+# Recursive with Memoization
+def climb_stairs_memo(n, memo={}):
+    if n in memo:
+        return memo[n]
+    if (n == 0) or (n == 1):
+        return 1
+    memo[n] = climb_stairs_memo(n - 1, memo) + climb_stairs_memo(n - 2, memo)
+    return memo[n]
+# -- time complexity: O(1) because memo's stored in a dictionary
+# -- space complexity: O(n)
+
+# Iterative with Array
+def climb_stairs_iterative_array(n):
+    if (n == 0) or (n == 1):
+        return 1
+    ways_to_climb = [0] * (n + 1)
+    ways_to_climb[0], ways_to_climb[1] = 1, 1
+    for i in range(2, n + 1):
+        ways_to_climb[i] = ways_to_climb[i - 1] + ways_to_climb[i - 2]
+    return ways_to_climb[n]
+# -- time complexity: O(n) because of the loop
+# -- space complexity: O(n) because of the array for the intermediate results
+
+# Iterative with Variables
+def climb_stairs_iterative_vars(n):
+    if n == 0 or n == 1:
+        return 1
+    previous_2, previous_1 = 1, 1
+    for i in range(2, n + 1):
+        current = previous_1 + previous_2
+        previous_2 = previous_1
+        previous_1 = current
+    return previous_1
+# -- time complexity: O(n) same as in the previous one
+# -- space complexity: O(1) only two variables are used to store intermediate results
+
+def Sanity_Test():
+    results = {
+        0: 1,
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 5,
+        5: 8,
+        6: 13,
+        7: 21,
+        8: 34,
+        9: 55,
+        10: 89,
+        15: 987,
+        20: 10946,
+        25: 121393,
+    }
+    for func in [climb_stairs_recursive, climb_stairs_memo, climb_stairs_iterative_array, climb_stairs_iterative_vars]:
+        for n, expected in results.items():
+            actual = func(n)
+            assert actual == expected, f"Expected {expected}, but got {actual} for n={n} using {func.__name__}"
+
+    print(f"\033[92mSanity test passed\033[0m")
+
+
+# TODO: you can modify this function, it's just a helper for you
+def Performance_Test():
+    for func in [climb_stairs_recursive, climb_stairs_memo, climb_stairs_iterative_array, climb_stairs_iterative_vars]:
+        start_time = datetime.datetime.now()
+        res = func(25)
+        print(res)
+        end_time = datetime.datetime.now()
+        print(f"{func.__name__} took: {end_time - start_time}")
+    print(f"\033[92mPerformance test passed\033[0m")
+
+
+Sanity_Test()
+Performance_Test()
+
+
+import matplotlib.pyplot as plt
+import time
+
+def measure_time(method, n):
+    start_time = time.time()
+    method(n)
+    end_time = time.time()
+    return end_time - start_time
+
+
+n_values = [i for i in range(0, 25)]
+time_of_recursive = [measure_time(climb_stairs_recursive, n) for n in n_values]
+time_of_memo = [measure_time(climb_stairs_memo, n) for n in n_values]
+time_of_iterative_arr = [measure_time(climb_stairs_iterative_array, n) for n in n_values]
+time_of_iterative_vars = [measure_time(climb_stairs_iterative_vars, n) for n in n_values]
+
+plt.plot(n_values,time_of_recursive,label='Recursive')
+plt.plot(n_values,time_of_memo,label='Memoization')
+plt.plot(n_values,time_of_iterative_arr,label='Iterative (Array)')
+plt.plot(n_values,time_of_iterative_vars,label='Iterative (Vars)')
+plt.xlabel('N')
+plt.ylabel('Time (seconds)')
+plt.legend()
+plt.show()
