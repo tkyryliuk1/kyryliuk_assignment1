@@ -1,0 +1,157 @@
+class BinarySearchTree:
+    class Node:
+        def __init__(self, value):
+            self.data = value
+            self.left = None
+            self.right = None
+
+    def __init__(self):
+        self.root = None
+
+    def _search(self, root, value):
+        if root is None:
+            return False
+        if root.data == value:
+            return True
+        if value < root.data:
+            return self._search(root.left, value)
+        return self._search(root.right, value)
+
+    def search(self, value):
+        return self._search(self.root, value)
+
+    def _insert(self, root, value):
+        if root is None:
+            return self.Node(value)
+        if value < root.data:
+            root.left = self._insert(root.left, value)
+        elif value > root.data:
+            root.right = self._insert(root.right, value)
+        return root
+
+    def insert(self, value):
+        if not self.root:
+            self.root = self.Node(value)
+        else:
+            self.root = self._insert(self.root, value)
+
+    def _remove(self, root, value):
+        if root is None:
+            return root
+        if value < root.data:
+            root.left = self._remove(root.left, value)
+        elif value > root.data:
+            root.right = self._remove(root.right, value)
+        else:
+            if root.left is None:
+                return root.right
+            if root.right is None:
+                return root.left
+            max_left = root.left
+            while max_left.right:
+                max_left = max_left.right
+            root.data = max_left.data
+            root.left = self._remove(root.left, max_left.data)
+        return root
+
+    def remove(self, value):
+        self.root = self._remove(self.root, value)
+
+    def _print_sorted(self, root):
+        if root is None:
+            return
+        self._print_sorted(root.left)
+        print(root.data)
+        self._print_sorted(root.right)
+
+    def print_sorted(self):
+        self._print_sorted(self.root)
+
+bst = BinarySearchTree()
+bst.insert(2)
+bst.insert(3)
+bst.insert(5)
+bst.insert(1)
+
+bst.remove(2)
+print(bst.search(1))
+
+
+
+class MaxHeap:
+    def __init__(self):
+        self.heap = []
+
+    def _parent(self, i):
+        return (i - 1) // 2
+
+    def _left(self, i):
+        return 2 * i + 1
+
+    def _right(self, i):
+        return 2 * i + 2
+
+    def _heapify_up(self, i):
+        while i > 0 and self.heap[self._parent(i)] < self.heap[i]:
+            self.heap[self._parent(i)], self.heap[i] = self.heap[i], self.heap[self._parent(i)]
+            i = self._parent(i)
+
+    def _heapify_down(self, i):
+        largest = i
+        left = self._left(i)
+        right = self._right(i)
+
+        if left < len(self.heap) and self.heap[left] > self.heap[largest]:
+            largest = left
+
+        if right < len(self.heap) and self.heap[right] > self.heap[largest]:
+            largest = right
+
+        if largest != i:
+            self.heap[i], self.heap[largest] = self.heap[largest], self.heap[i]
+            self._heapify_down(largest)
+
+    def insert(self, value):
+        self.heap.append(value)
+        self._heapify_up(len(self.heap) - 1)
+
+    def remove(self):
+        if len(self.heap) == 0:
+            return None
+        if len(self.heap) == 1:
+            return self.heap.pop()
+
+        root = self.heap[0]
+        self.heap[0] = self.heap.pop()
+        self._heapify_down(0)
+        return root
+
+    def peek(self):
+        return self.heap[0] if self.heap else None
+
+    def size(self):
+        return len(self.heap)
+
+    def print_heap(self):
+        print(self.heap)
+
+    def build_heap(self, arr):
+        self.heap = arr
+        for i in range(len(arr) // 2 - 1, -1, -1):
+            self._heapify_down(i)
+
+heap = MaxHeap()
+
+heap.insert(20)
+heap.insert(5)
+heap.insert(15)
+heap.insert(30)
+heap.insert(10)
+
+heap.print_heap()  #[30, 20, 15, 5, 10]
+print(heap.peek())  #30
+print(heap.remove())  #30
+heap.print_heap()  #[20, 10, 15, 5]
+
+print(heap.size())  #4
+
